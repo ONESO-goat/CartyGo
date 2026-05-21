@@ -22,7 +22,7 @@ class Corral:
                  stores_perferred_limit:int=30):
         breakdown = self.breakdown_home(home=home)
         self.database = database
-        self.home = Home
+        self.home = home
         self.number = number # the number of the corral, example "corral 5 likes corral 3"
         self.store = breakdown["store"]  # Store name, can be set to any store
         self.address = breakdown["address"]
@@ -33,7 +33,7 @@ class Corral:
         self.current_storage_amount = 0
         self.cart_ids = []
         self.brothers_and_sisters:list[tuple[Corral, int]] = []
-        self.last_to_join:"Cart"|None = None
+        self.last_to_join:Cart|None = None
         
     def inspection(self, cart:"Cart"):
         if self.full:
@@ -53,7 +53,7 @@ class Corral:
                     lowest_distance = distance # new lowest distance
             
             if found: # if found, go to that corral
-                cart.go(lowest_distance)
+                cart.go(destination=lowest_distance)
             else: # if not, go to the store if close to it, else send a call
                 if lowest_distance > 100: # if the distance is more than 100 feet, send a call for manual pick up
                     print("poor baby is lost, go pick them up!")
@@ -63,23 +63,71 @@ class Corral:
                 cart.go(lowest_distance)
             return
         
-        self.add_cart(cart.id)
+        self.add_cart(cart)
+    
+    def inspectionGemini(self, cart: "Cart"):
+        """
+        The Traffic Officer Logic:
+        Decides whether to accept the cart or reroute it to an empty neighbor.
+        """
+        if self.full:
+            print(f"Corral {self.number} is full! Evaluating sister corrals...")
+            nearest_avail_corral = None
+            lowest_distance = float('inf') # Start with infinity for clean comparison
+            
+            for sibling, distance in self.brothers_and_sisters:
+                if sibling.full:
+                    print(f"Sister Corral {sibling.number} is also full. Skipping.")
+                    continue 
+                
+                if distance < lowest_distance:
+                    lowest_distance = distance
+                    nearest_avail_corral = sibling
+            
+            if nearest_avail_corral: 
+                print(f"Rerouting cart {cart.number} to Corral {nearest_avail_corral.number} ({lowest_distance}ft away)")
+                cart.go(destination=nearest_avail_corral.id) # Assuming .go() can accept a corral destination
+            else: 
+                # If no corrals are open, check how far we are from the storefront base
+                # (You will pass coordinates to your AI distance calculator here down the road)
+                estimated_distance_to_home = 50 # Placeholder value for now
+                
+                if estimated_distance_to_home > 100: 
+                    print("All corrals full and too far from store storefront. Sending distress call!")
+                    self.send_distress(cart)
+                else:
+                    print("ALL CORRALS ARE FULL. Sending cart back to storefront base.")
+                    cart.go(destination=self.homes_perferred_deploy)
+                return
+        
+            # If not full, welcome aboard!
+            self.add_cart(cart)
         
     def send_distress(self, cart:"Cart"):
-        pass 
+        print(f"[DISTRESS] Cart {cart.number} is stranded out-of-bounds. Manual pickup required.") 
     
-    def add_cart(self, cart_id:str):
-        
-        self.current_storage_amount += 1
-        self.cart_ids.append(cart_id)
-        cart = self.database.get_cart(cart_id)
+    def add_cart(self, cart: "Cart"):
+        if self.full:
+            return
+            
+        self.cart_ids.append(cart.id)
         self.last_to_join = cart
-        self.commit()
+        self.current_storage_amount += 1
         
-    def remove_cart(self,cart_id:str):
-        self.current_storage_amount -= 1
-        self.cart_ids.remove(cart_id)
+        # Dynamically check capacity state
+        self.full = self.current_storage_amount >= self.max_carts_inside
         self.commit()
+        print(f"Cart {cart.number} parked in Corral {self.number}. Storage: {self.current_storage_amount}/{self.max_carts_inside}")
+        
+    def remove_cart(self, cart: "Cart"):
+        if cart.id in self.cart_ids:
+            self.cart_ids.remove(cart.id)
+            self.current_storage_amount -= 1
+            self.full = self.current_storage_amount >= self.max_carts_inside
+            
+            if self.last_to_join == cart:
+                self.last_to_join = None # Clear if the newest cart leaves
+            self.commit()
     
     def commit(self):
         pass
@@ -90,8 +138,8 @@ class Corral:
             return
         self.last_to_join.go(self.homes_perferred_deploy)
          
-    def add_other_corral(self, corral:"Corral"):
-        distance = ... # TODO: distance of the corral
+    def add_other_corral(self, corral:"Corral", distance):
+        #distance = ... # TODO: distance of the corral
         self.brothers_and_sisters.append((corral, distance))
     
     def change_number(self, new_number:int):

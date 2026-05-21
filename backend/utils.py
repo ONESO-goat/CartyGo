@@ -1,4 +1,6 @@
-from typing import Protocol
+from typing import Protocol, TYPE_CHECKING
+if TYPE_CHECKING:
+    from backend.cart_auto.carts import Cart
 
 class NoneExistentCoordinates(Exception):
     pass
@@ -11,11 +13,6 @@ class Address(Protocol):
 class Coordinates(Protocol):
     def is_valid(self, coordinates:str):
         pass
-
-
-def get_cart(_id:str)->"Cart":
-    from backend.cart_auto.carts import Cart
-    pass
 
 count = 1
 

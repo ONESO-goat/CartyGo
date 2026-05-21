@@ -7,6 +7,9 @@ import json
 from AI.ai import CartyGo
 from states.state import CartState, CartSpeed
 import time
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from backend.cart_home.home import Home
 
 class Cart:
     """
@@ -85,7 +88,7 @@ class Cart:
         
         success (True) or not (False), if not, then send distress call for manual pick up
         """
-        pass    
+        return False    
     
     def return_to_previous_location(self):
         """

@@ -48,7 +48,7 @@ class MiniBase:
         self.corral_database.append({
             "id": corral.id,
             "number": corral.number,
-            "home_id": corral.home.id,
+            "home_id": corral.home.id ,
             "store": corral.store,
             "address": corral.address,
             "max_capacity": corral.max_carts_inside,

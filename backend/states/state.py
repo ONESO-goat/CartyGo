@@ -7,6 +7,8 @@ class CartState(Enum):
     RETURNING = "returning" # navigating home
     BLOCKED = "blocked"     # obstacle detected
     EMERGENCY = "emergency" # force stop
+    ATTACKED = "being attacked"
+    STOLEN = "stolen"
     
 class CartSpeed(Enum):
     TARGET_SPEED = 5.5
@@ -14,7 +16,14 @@ class CartSpeed(Enum):
     MAXIMUM_SPEED = 15
     STOP = 0
     CAUTION = 2
+class CorralStatus(Enum):
+    EMPTY = 'empty'
+    FULL = 'full'
+    BUSY = 'busy'
+    ALERTED = 'alerted'
+    OFFLINE = "offline" 
     
+
 class Prompts(Enum):
     CARTS_PROMPT = CART,
     HOME_PROMPT = HOME,

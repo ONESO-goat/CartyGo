@@ -8,6 +8,8 @@ enum class CartState{
     RETURNING, // navigating home
     BLOCKED,// obstacle detected
     EMERGENCY, // force stop
+    STOLEN,
+    ATTACKED
 };
 
 #endif

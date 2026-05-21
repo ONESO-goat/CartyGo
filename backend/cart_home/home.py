@@ -4,7 +4,10 @@ import numpy as np
 import uuid
 import time
 from utils import NoneExistentCoordinates, Address, Coordinates
-
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from backend.cart_auto.carts import Cart
+    from backend.cart_cornall.corral import Corral
 class Home:
     """This is bascally the store it self, example this would be market basket.
     
@@ -51,11 +54,7 @@ class Home:
         """Likly just use gemini to search if the address exist, is a store, has carts, etc"""
         
         raise NoneExistentCoordinates(f"Could not found coordinates: '{coordinates}'")
-    
-    def send_signal(self, cart:"Cart", signal:str):
-        """This is where we would implement the logic to send a signal to the cart, like "return home", "stop", "change address", etc."""
-        pass
-    
+
     def remove_cart(self, cart: "Cart"):
         """Safely severs connection, usually for decommissioning or repairs."""
         try:
